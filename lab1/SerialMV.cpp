@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 
 // Initialization of data
 void dummyDataInit(double *pMatrix, double *pVector, int size)
@@ -32,14 +33,13 @@ void processInitialization(double *&pMatrix, double *&pVector, double *&pResult,
     dummyDataInit(pMatrix, pVector, size);
 }
 
-void printMatrix(double *matrix, int size)
+void printMatrix(double *matrix, int rowCount, int colCount)
 {
-    std::cout << "Matrix:\n";
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < rowCount; i++)
     {
-        for (int j = 0; j < size; j++)
+        for (int j = 0; j < colCount; j++)
         {
-            std::cout << matrix[i * size + j];
+            std::cout << std::setw(7) << std::fixed << std::setprecision(4) << matrix[i * colCount + j];
         }
         std::cout << "\n";
     }
@@ -47,12 +47,29 @@ void printMatrix(double *matrix, int size)
 }
 void printVector(double *vector, int size)
 {
-    std::cout << "Vector:\n";
     for (int i = 0; i < size; i++)
     {
-        std::cout << vector[i];
+        std::cout << std::setw(8) << std::fixed << std::setprecision(4) << vector[i];
     }
     std::cout << "\n";
+}
+
+// Function for matrix-vector multiplication
+void ResultCalculation(double *pMatrix, double *pVector, double *pResult, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        pResult[i] = 0;
+        for (int j = 0; j < size; j++)
+            pResult[i] += pMatrix[i * size + j] * pVector[j];
+    }
+}
+
+void ProcessTermination(double *pMatrix, double *pVector, double *pResult)
+{
+    delete[] pMatrix;
+    delete[] pVector;
+    delete[] pResult;
 }
 
 int main()
@@ -63,7 +80,18 @@ int main()
     int size;
 
     processInitialization(pMatrix, pVector, pResult, size);
-    printMatrix(pMatrix, size);
+    std::cout << "\nInitial matrix:\n";
+    printMatrix(pMatrix, size, size);
+    std::cout << "Initial vector:\n";
     printVector(pVector, size);
+
+    // Matrix-vector multiplication
+    ResultCalculation(pMatrix, pVector, pResult, size);
+    // Result vector
+    printVector(pResult, size);
+
+    // Computational process termination
+    ProcessTermination(pMatrix, pVector, pResult);
+
     return 0;
 }
