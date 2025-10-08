@@ -49,6 +49,8 @@ void serialResultCalculation(double *pMatrix, double *pVector, double *pResult, 
 void processInitialization(double *&pMatrix, double *&pVector,
                            double *&pResult, double *&pProcRows, double *&pProcResult, int &size, int &rowNum)
 {
+    int restRows; // Number of rows, that haven’t been distributed yet
+
     if (procRank == 0)
     {
         do
@@ -61,16 +63,20 @@ void processInitialization(double *&pMatrix, double *&pVector,
                 printf("Size of the objects must be greater than "
                        "number of processes! \n ");
             }
-            if (size % procNum != 0)
-            {
-                printf("Size of objects must be divisible by "
-                       "number of processes! \n");
-            }
-        } while ((size < procNum) || (size % procNum != 0));
+            // if (size % procNum != 0)
+            // {
+            //     printf("Size of objects must be divisible by "
+            //            "number of processes! \n");
+            // }
+        } while (size < procNum);
     }
     MPI_Bcast(&size, 1, MPI_INT, 0, MPI_COMM_WORLD);
     // Determine the number of matrix rows stored on each process
-    rowNum = size / procNum;
+    restRows = size;
+    for (int i = 0; i < procRank; i++)
+        restRows = restRows - restRows / (procNum - i);
+    rowNum = restRows / (procNum - procRank);
+
     // Memory allocation
     pVector = new double[size];
     pResult = new double[size];
@@ -88,8 +94,30 @@ void processInitialization(double *&pMatrix, double *&pVector,
 // Function for distribution of the initial data among the processes
 void dataDistribution(double *pMatrix, double *pProcRows, double *pVector, int size, int rowNum)
 {
+    int *pSendNum;       // Number of elements sent to the process
+    int *pSendInd;       // Index of the first data element sent to the process
+    int restRows = size; // Number of rows, that haven’t been distributed yet
     MPI_Bcast(pVector, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Scatter(pMatrix, rowNum * size, MPI_DOUBLE, pProcRows, rowNum * size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    // Alloc memory for temporary objects
+    pSendInd = new int[procNum];
+    pSendNum = new int[procNum];
+    // Determine the disposition of the matrix rows for current process
+    rowNum = (size / procNum);
+    pSendNum[0] = rowNum * size;
+    pSendInd[0] = 0;
+    for (int i = 1; i < procNum; i++)
+    {
+        restRows -= rowNum;
+        rowNum = restRows / (procNum - i);
+        pSendNum[i] = rowNum * size;
+        pSendInd[i] = pSendInd[i - 1] + pSendNum[i - 1];
+    }
+    // Scatter the rows
+    MPI_Scatterv(pMatrix, pSendNum, pSendInd, MPI_DOUBLE, pProcRows,
+                 pSendNum[procRank], MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    // Free the memory
+    delete[] pSendNum;
+    delete[] pSendInd;
 }
 
 void testDistribution(double *pMatrix, double *pVector, double *pProcRows,
@@ -146,7 +174,29 @@ void testPartialResults(double *pProcResult, int rowNum)
 // Function for result vector replication
 void resultReplication(double *pProcResult, double *pResult, int size, int rowNum)
 {
-    MPI_Allgather(pProcResult, rowNum, MPI_DOUBLE, pResult, rowNum, MPI_DOUBLE, MPI_COMM_WORLD);
+    int *pReceiveNum; // Number of elements, that current process sends
+    int *pReceiveInd; // Index of the first element from current process
+    // in result vector
+    int RestRows = size; // Number of rows, that haven’t been distributed yet
+    int i;               // Loop variable
+    // Alloc memory for temporary objects
+    pReceiveNum = new int[procNum];
+    pReceiveInd = new int[procNum];
+    // Determine the disposition of the result vector block
+    pReceiveInd[0] = 0;
+    pReceiveNum[0] = size / procNum;
+    for (i = 1; i < procNum; i++)
+    {
+        RestRows -= pReceiveNum[i - 1];
+        pReceiveNum[i] = RestRows / (procNum - i);
+        pReceiveInd[i] = pReceiveInd[i - 1] + pReceiveNum[i - 1];
+    }
+    // Gather the whole result vector on every processor
+    MPI_Allgatherv(pProcResult, pReceiveNum[procRank], MPI_DOUBLE, pResult,
+                   pReceiveNum, pReceiveInd, MPI_DOUBLE, MPI_COMM_WORLD);
+    // Free the memory
+    delete[] pReceiveNum;
+    delete[] pReceiveInd;
 }
 
 // Testing the result of parallel matrix-vector multiplication
@@ -198,12 +248,21 @@ int main(int argc, char *argv[])
         printf("Parallel matrix - vector multiplication program\n");
 
     processInitialization(pMatrix, pVector, pResult, pProcRows, pProcResult, size, rowNum);
+    start = MPI_Wtime();
+
     dataDistribution(pMatrix, pProcRows, pVector, size, rowNum);
     // Parallel matrix vector multiplication
     parallelResultCalculation(pProcRows, pVector, pProcResult, size, rowNum);
     // Result replication
     resultReplication(pProcResult, pResult, size, rowNum);
+    finish = MPI_Wtime();
+    duration = finish - start;
+
     testResult(pMatrix, pVector, pResult, size);
+    if (procRank == 0)
+    {
+        printf("Time of execution = % f\n", duration);
+    }
     processTermination(pMatrix, pVector, pResult, pProcRows, pProcResult);
 
     MPI_Finalize();
