@@ -47,6 +47,13 @@ void ProcessInitialization(double *&pAMatrix, double *&pBMatrix, double *&pCMatr
     }
 }
 
+// Function for computational process termination
+void ProcessTermination(double *pAMatrix, double *pBMatrix, double *pCMatrix)
+{
+    delete[] pAMatrix;
+    delete[] pBMatrix;
+    delete[] pCMatrix;
+}
 int main()
 {
     double *pAMatrix; // First argument of matrix multiplication
@@ -63,4 +70,7 @@ int main()
     PrintMatrix(pAMatrix, Size, Size);
     printf("\nInitial B Matrix \n");
     PrintMatrix(pBMatrix, Size, Size);
+
+    // Computational process termination
+    ProcessTermination(pAMatrix, pBMatrix, pCMatrix);
 }
