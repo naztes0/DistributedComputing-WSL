@@ -16,8 +16,8 @@ void DummyDataInitialization(double *pAMatrix, double *pBMatrix, int Size)
     {
         for (int j = 0; j < Size; j++)
         {
-            pAMatrix[i * Size + j] = i;
-            pBMatrix[i * Size + j] = i;
+            pAMatrix[i * Size + j] = 1;
+            pBMatrix[i * Size + j] = 1;
         }
     }
 }
@@ -33,6 +33,22 @@ void RandomDataInitialization(double *pAMatrix, double *pBMatrix, int Size)
             pBMatrix[i * Size + j] = rand() / double(1000000);
         }
 }
+
+void SerialResultCalculation(double *pAMatrix, double *pBMatrix, double *pCMatrix, int Size)
+{
+
+    for (int i = 0; i < Size; i++)
+    {
+        for (int j = 0; j < Size; j++)
+        {
+            for (int k = 0; k < Size; k++)
+            {
+                pCMatrix[i * Size + j] += pAMatrix[i * Size + k] * pBMatrix[k * Size + j];
+            }
+        }
+    }
+}
+
 // Function for formatted matrix output
 void PrintMatrix(double *pMatrix, int RowCount, int ColCount)
 {
@@ -132,6 +148,7 @@ void TestBlocks(double *pBlock, int BlockSize, const char *str)
     if (ProcRank == 0)
     {
         printf("%s \n", str);
+        fflush(stdout);
     }
     for (int i = 0; i < ProcNum; i++)
     {
@@ -143,6 +160,52 @@ void TestBlocks(double *pBlock, int BlockSize, const char *str)
         MPI_Barrier(MPI_COMM_WORLD);
     }
 }
+
+// Broadcasting blocks of the matrix A to process grid rows
+void ABlockCommunication(int iter, double *pAblock, double *pMatrixAblock, int BlockSize)
+{
+    // Defining the leading process of the process grid row
+    int Pivot = (GridCoords[0] + iter) % GridSize;
+    // Copying the transmitted block in a separate memory buffer
+    if (GridCoords[1] == Pivot)
+    {
+        for (int i = 0; i < BlockSize * BlockSize; i++)
+            pAblock[i] = pMatrixAblock[i];
+    }
+    // Block broadcasting
+    MPI_Bcast(pAblock, BlockSize * BlockSize, MPI_DOUBLE, Pivot, RowComm);
+}
+// Function for cyclic shifting the blocks of the matrix B
+void BblockCommunication(double *pBblock, int BlockSize, MPI_Comm ColumnComm)
+{
+    MPI_Status Status;
+    int NextProc = GridCoords[0] + 1;
+    if (GridCoords[0] == GridSize - 1)
+        NextProc = 0;
+    int PrevProc = GridCoords[0] - 1;
+    if (GridCoords[0] == 0)
+        PrevProc = GridSize - 1;
+    MPI_Sendrecv_replace(pBblock, BlockSize * BlockSize, MPI_DOUBLE, NextProc, 0, PrevProc, 0, ColumnComm, &Status);
+}
+// Function for block multiplication
+void BlockMultiplication(double *pAblock, double *pBblock, double *pCblock, int Size)
+{
+    SerialResultCalculation(pAblock, pBblock, pCblock, Size);
+}
+// Function for parallel execution of the Fox method
+void ParallelResultCalculation(double *pAblock, double *pMatrixAblock, double *pBblock, double *pCblock, int BlockSize)
+{
+    for (int iter = 0; iter < GridSize; iter++)
+    {
+        // Sending blocks of matrix A to the process grid rows
+        ABlockCommunication(iter, pAblock, pMatrixAblock, BlockSize);
+        // Block multiplication
+        BlockMultiplication(pAblock, pBblock, pCblock, BlockSize);
+        // Cyclic shift of blocks of matrix B in process grid columns
+        BblockCommunication(pBblock, BlockSize, ColComm);
+    }
+}
+
 void ProcessTermination(double *pAMatrix, double *pBMatrix,
                         double *pCMatrix, double *pAblock, double *pBblock, double *pCblock,
                         double *pMatrixAblock)
@@ -199,11 +262,15 @@ int main(int argc, char *argv[])
             printf("\nInitial matrix B \n");
             PrintMatrix(pBMatrix, Size, Size);
         }
-        ProcessTermination(pAMatrix, pBMatrix, pCMatrix, pAblock, pBblock, pCblock, pMatrixAblock);
+
         // Data distribution among the processes
         DataDistribution(pAMatrix, pBMatrix, pMatrixAblock, pBblock, Size, BlockSize);
-        TestBlocks(pMatrixAblock, BlockSize, "Initial blocks of matrix A");
-        TestBlocks(pBblock, BlockSize, "Initial blocks of matrix B");
+        // Execution of Fox method
+        ParallelResultCalculation(pAblock, pMatrixAblock, pBblock, pCblock, BlockSize);
+        TestBlocks(pCblock, BlockSize, "\nResult blocks\n");
+        // TestBlocks(pMatrixAblock, BlockSize, "Initial blocks of matrix A");
+        // TestBlocks(pBblock, BlockSize, "Initial blocks of matrix B");
+        ProcessTermination(pAMatrix, pBMatrix, pCMatrix, pAblock, pBblock, pCblock, pMatrixAblock);
     }
     MPI_Finalize();
 }
