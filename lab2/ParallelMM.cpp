@@ -206,6 +206,20 @@ void ParallelResultCalculation(double *pAblock, double *pMatrixAblock, double *p
     }
 }
 
+// Function for gathering the result matrix
+void ResultCollection(double *pCMatrix, double *pCblock, int Size, int BlockSize)
+{
+    double *pResultRow = new double[Size * BlockSize];
+    for (int i = 0; i < BlockSize; i++)
+    {
+        MPI_Gather(&pCblock[i * BlockSize], BlockSize, MPI_DOUBLE, &pResultRow[i * Size], BlockSize, MPI_DOUBLE, 0, RowComm);
+    }
+    if (GridCoords[1] == 0)
+    {
+        MPI_Gather(pResultRow, BlockSize * Size, MPI_DOUBLE, pCMatrix, BlockSize * Size, MPI_DOUBLE, 0, ColComm);
+    }
+    delete[] pResultRow;
+}
 void ProcessTermination(double *pAMatrix, double *pBMatrix,
                         double *pCMatrix, double *pAblock, double *pBblock, double *pCblock,
                         double *pMatrixAblock)
@@ -270,6 +284,13 @@ int main(int argc, char *argv[])
         TestBlocks(pCblock, BlockSize, "\nResult blocks\n");
         // TestBlocks(pMatrixAblock, BlockSize, "Initial blocks of matrix A");
         // TestBlocks(pBblock, BlockSize, "Initial blocks of matrix B");
+        // Gathering the result matrix
+        ResultCollection(pCMatrix, pCblock, Size, BlockSize);
+        if (ProcRank == 0)
+        {
+            printf("Result matrix \n");
+            PrintMatrix(pCMatrix, Size, Size);
+        }
         ProcessTermination(pAMatrix, pBMatrix, pCMatrix, pAblock, pBblock, pCblock, pMatrixAblock);
     }
     MPI_Finalize();
