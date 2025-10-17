@@ -87,7 +87,7 @@ void ProcessInitialization(double *&pAMatrix, double *&pBMatrix,
         pAMatrix = new double[Size * Size];
         pBMatrix = new double[Size * Size];
         pCMatrix = new double[Size * Size];
-        DummyDataInitialization(pAMatrix, pBMatrix, Size);
+        RandomDataInitialization(pAMatrix, pBMatrix, Size);
     }
     for (int i = 0; i < BlockSize * BlockSize; i++)
     {
@@ -220,6 +220,33 @@ void ResultCollection(double *pCMatrix, double *pCblock, int Size, int BlockSize
     }
     delete[] pResultRow;
 }
+
+// Function for testing the matrix multiplication result
+void TestResult(double *pAMatrix, double *pBMatrix, double *pCMatrix, int Size)
+{
+    double *pSerialResult;
+    double Accuracy = 1.e-6;
+    int equal = 0; // =1, if the matrices are not equal
+    if (ProcRank == 0)
+    {
+        pSerialResult = new double[Size * Size];
+        for (int i = 0; i < Size * Size; i++)
+        {
+            pSerialResult[i] = 0;
+        }
+        SerialResultCalculation(pAMatrix, pBMatrix, pSerialResult, Size);
+        for (int i = 0; i < Size * Size; i++)
+        {
+            if (fabs(pSerialResult[i] - pCMatrix[i]) >= Accuracy)
+                equal = 1;
+        }
+        if (equal == 1)
+            printf("The results of serial and parallel algorithms are NOT identical. Check your code.");
+        else
+            printf("The results of serial and parallel algorithms are identical.");
+        delete[] pSerialResult;
+    }
+}
 void ProcessTermination(double *pAMatrix, double *pBMatrix,
                         double *pCMatrix, double *pAblock, double *pBblock, double *pCblock,
                         double *pMatrixAblock)
@@ -276,7 +303,7 @@ int main(int argc, char *argv[])
             printf("\nInitial matrix B \n");
             PrintMatrix(pBMatrix, Size, Size);
         }
-
+        Start = MPI_Wtime();
         // Data distribution among the processes
         DataDistribution(pAMatrix, pBMatrix, pMatrixAblock, pBblock, Size, BlockSize);
         // Execution of Fox method
@@ -286,10 +313,17 @@ int main(int argc, char *argv[])
         // TestBlocks(pBblock, BlockSize, "Initial blocks of matrix B");
         // Gathering the result matrix
         ResultCollection(pCMatrix, pCblock, Size, BlockSize);
+        Finish = MPI_Wtime();
+        Duration = Finish - Start;
         if (ProcRank == 0)
         {
             printf("Result matrix \n");
             PrintMatrix(pCMatrix, Size, Size);
+        }
+        TestResult(pAMatrix, pBMatrix, pCMatrix, Size);
+        if (ProcRank == 0)
+        {
+            printf("Time of execution = % f\n", Duration);
         }
         ProcessTermination(pAMatrix, pBMatrix, pCMatrix, pAblock, pBblock, pCblock, pMatrixAblock);
     }
