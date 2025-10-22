@@ -94,10 +94,10 @@ int main()
 
     ProcessInitialization(pAMatrix, pBMatrix, pCMatrix, Size);
     // Matrix output
-    printf("\nInitial A Matrix \n");
-    PrintMatrix(pAMatrix, Size, Size);
-    printf("\nInitial B Matrix \n");
-    PrintMatrix(pBMatrix, Size, Size);
+    // printf("\nInitial A Matrix \n");
+    // PrintMatrix(pAMatrix, Size, Size);
+    // printf("\nInitial B Matrix \n");
+    // PrintMatrix(pBMatrix, Size, Size);
 
     start = clock();
     // Matrix multiplication
@@ -106,8 +106,8 @@ int main()
     finish = clock();
     duration = (finish - start) / double(CLOCKS_PER_SEC);
 
-    printf("\n Result Matrix: \n");
-    PrintMatrix(pCMatrix, Size, Size);
+    // printf("\n Result Matrix: \n");
+    // PrintMatrix(pCMatrix, Size, Size);
     // Printing the time spent by matrix multiplication
     printf("\n Time of execution: %f\n", duration);
     // Computational process termination
