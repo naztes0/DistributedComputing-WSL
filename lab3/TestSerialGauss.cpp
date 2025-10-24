@@ -4,22 +4,6 @@
 #include <math.h>
 int *pSerialPivotPos;  // Number of pivot rows selected at the iterations
 int *pSerialPivotIter; // Iterations, at which the rows were pivots
-// Function for simple initialization of the matrix and the vector elements
-void DummyDataInitialization(double *pMatrix, double *pVector, int Size)
-{
-    int i, j; // Loop variables
-    for (i = 0; i < Size; i++)
-    {
-        pVector[i] = i + 1;
-        for (j = 0; j < Size; j++)
-        {
-            if (j <= i)
-                pMatrix[i * Size + j] = 1;
-            else
-                pMatrix[i * Size + j] = 0;
-        }
-    }
-}
 
 void RandomDataInitialization(double *pMatrix, double *pVector, int Size)
 {
@@ -40,15 +24,6 @@ void RandomDataInitialization(double *pMatrix, double *pVector, int Size)
 // Function for memory allocation and data initialization
 void ProcessInitialization(double *&pMatrix, double *&pVector, double *&pResult, int &Size)
 {
-    // Setting the size of the matrix and the vector
-    do
-    {
-        printf("\nEnter the size of the matrix and the vector: ");
-        scanf("%d", &Size);
-        printf("\nChosen size = %d \n", Size);
-        if (Size <= 0)
-            printf("\nSize of objects must be greater than 0!\n");
-    } while (Size <= 0);
     // Memory allocation
     pMatrix = new double[Size * Size];
     pVector = new double[Size];
@@ -57,27 +32,7 @@ void ProcessInitialization(double *&pMatrix, double *&pVector, double *&pResult,
     // DummyDataInitialization(pMatrix, pVector, Size);
     RandomDataInitialization(pMatrix, pVector, Size);
 }
-// Function for formatted matrix output
-void PrintMatrix(double *pMatrix, int RowCount, int ColCount)
-{
-    int i, j; // Loop variables
-    for (i = 0; i < RowCount; i++)
-    {
-        for (j = 0; j < ColCount; j++)
-            printf("%10.4f ", pMatrix[i * RowCount + j]);
-        printf("\n");
-    }
-    printf("\n");
-}
-// Function for formatted vector output
-void PrintVector(double *pVector, int Size)
-{
-    int i;
-    for (i = 0; i < Size; i++)
-        printf("%8.4f ", pVector[i]);
-    printf("\n");
-}
-// Function for finding the pivot row
+
 int FindPivotRow(double *pMatrix, int Size, int Iter)
 {
     int PivotRow = -1;   // Index of the pivot row
@@ -95,7 +50,6 @@ int FindPivotRow(double *pMatrix, int Size, int Iter)
     return PivotRow;
 }
 // Function for the column elimination
-// Function for the column elimination (fixed)
 void SerialColumnElimination(double *pMatrix, double *pVector, int Pivot, int Iter, int Size)
 {
     double PivotValue = pMatrix[Pivot * Size + Iter];
@@ -177,30 +131,37 @@ int main()
     int Size;        // Sizes of the initial matrix and the vector
     time_t start, finish;
     double duration;
+
+    int arrSizes[] = {10, 100, 500, 1000, 1500, 2000, 2500, 3000};
+
     printf("Serial Gauss algorithm for solving linear systems\n");
 
-    // Memory allocation and definition of objects' elements
-    ProcessInitialization(pMatrix, pVector, pResult, Size);
+    for (int i = 0; i < 8; i++)
+    {
+        printf("Gauss system size: %d", arrSizes[i]);
+        // Memory allocation and definition of objects' elements
+        ProcessInitialization(pMatrix, pVector, pResult, arrSizes[i]);
 
-    // The matrix and the vector output
-    printf("\nInitial Matrix \n");
-    PrintMatrix(pMatrix, Size, Size);
-    printf("Initial Vector \n");
-    PrintVector(pVector, Size);
+        // The matrix and the vector output
+        // printf("\nInitial Matrix \n");
+        // PrintMatrix(pMatrix, Size, Size);
+        // printf("Initial Vector \n");
+        // PrintVector(pVector, Size);
 
-    // Execution of the Gauss algorithm
-    start = clock();
-    SerialResultCalculation(pMatrix, pVector, pResult, Size);
-    finish = clock();
-    duration = (finish - start) / double(CLOCKS_PER_SEC);
+        // Execution of the Gauss algorithm
+        start = clock();
+        SerialResultCalculation(pMatrix, pVector, pResult, arrSizes[i]);
+        finish = clock();
+        duration = (finish - start) / double(CLOCKS_PER_SEC);
 
-    // Printing the result vector
-    printf("\nResult Vector: \n");
-    PrintVector(pResult, Size);
+        // Printing the result vector
+        // printf("\nResult Vector: \n");
+        // PrintVector(pResult, Size);
 
-    // Printing the execution time of the Gauss method
-    printf("\nTime of execution: %f\n", duration);
+        // Printing the execution time of the Gauss method
+        printf("\nTime of execution: %f\n", duration);
 
-    // Computational process termination
-    ProcessTermination(pMatrix, pVector, pResult);
+        // Computational process termination
+        ProcessTermination(pMatrix, pVector, pResult);
+    }
 }
