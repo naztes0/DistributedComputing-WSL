@@ -298,17 +298,17 @@ int main(int argc, char *argv[])
         ProcessInitialization(pAMatrix, pBMatrix, pCMatrix, pAblock, pBblock, pCblock, pMatrixAblock, Size, BlockSize);
         if (ProcRank == 0)
         {
-            printf("\nInitial matrix A \n");
-            PrintMatrix(pAMatrix, Size, Size);
-            printf("\nInitial matrix B \n");
-            PrintMatrix(pBMatrix, Size, Size);
+            // printf("\nInitial matrix A \n");
+            // PrintMatrix(pAMatrix, Size, Size);
+            // printf("\nInitial matrix B \n");
+            // PrintMatrix(pBMatrix, Size, Size);
         }
         Start = MPI_Wtime();
         // Data distribution among the processes
         DataDistribution(pAMatrix, pBMatrix, pMatrixAblock, pBblock, Size, BlockSize);
         // Execution of Fox method
         ParallelResultCalculation(pAblock, pMatrixAblock, pBblock, pCblock, BlockSize);
-        TestBlocks(pCblock, BlockSize, "\nResult blocks\n");
+        // TestBlocks(pCblock, BlockSize, "\nResult blocks\n");
         // TestBlocks(pMatrixAblock, BlockSize, "Initial blocks of matrix A");
         // TestBlocks(pBblock, BlockSize, "Initial blocks of matrix B");
         // Gathering the result matrix
@@ -317,10 +317,10 @@ int main(int argc, char *argv[])
         Duration = Finish - Start;
         if (ProcRank == 0)
         {
-            printf("Result matrix \n");
-            PrintMatrix(pCMatrix, Size, Size);
+            // printf("Result matrix \n");
+            // PrintMatrix(pCMatrix, Size, Size);
         }
-        TestResult(pAMatrix, pBMatrix, pCMatrix, Size);
+        // TestResult(pAMatrix, pBMatrix, pCMatrix, Size);
         if (ProcRank == 0)
         {
             printf("Time of execution = % f\n", Duration);
