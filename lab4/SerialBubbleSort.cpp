@@ -94,7 +94,7 @@ int main()
     SerialStdSort(testpdata, DataSize);
     finish = clock();
     printf("Data after sorting\n");
-    PrintData(testpdata, DataSize);
+    // PrintData(testpdata, DataSize);
     duration = (finish - start) / double(CLOCKS_PER_SEC);
     printf("Time of execution lib alg: %f\n", duration);
 
