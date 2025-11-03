@@ -76,16 +76,16 @@ int main()
     double *testpdata = new double[DataSize];
     std::copy(pData, pData + DataSize, testpdata);
 
-    printf("\nData before sorting\n");
-    PrintData(pData, DataSize);
+    // printf("\nData before sorting\n");
+    // PrintData(pData, DataSize);
 
     printf("\nSerial bubble sort:\n");
     // Serial bubble sort
     start = clock();
     SerialBubble(pData, DataSize);
     finish = clock();
-    printf("Data after sorting\n");
-    PrintData(pData, DataSize);
+    // printf("Data after sorting\n");
+    // PrintData(pData, DataSize);
     duration = (finish - start) / double(CLOCKS_PER_SEC);
     printf("Time of execution: %f\n", duration);
 
@@ -93,7 +93,7 @@ int main()
     start = clock();
     SerialStdSort(testpdata, DataSize);
     finish = clock();
-    printf("Data after sorting\n");
+    // printf("Data after sorting\n");
     // PrintData(testpdata, DataSize);
     duration = (finish - start) / double(CLOCKS_PER_SEC);
     printf("Time of execution lib alg: %f\n", duration);

@@ -290,11 +290,11 @@ int main(int argc, char *argv[])
     // Distributing the initial data among processes
     DataDistribution(pData, DataSize, pProcData, BlockSize);
     // Testing the data distribution
-    TestDistribution(pData, DataSize, pProcData, BlockSize);
+    // TestDistribution(pData, DataSize, pProcData, BlockSize);
 
     // Parallel bubble sort
     ParallelBubble(pProcData, BlockSize);
-    ParallelPrintData(pProcData, BlockSize);
+    // ParallelPrintData(pProcData, BlockSize);
     // Execution of data collection
     DataCollection(pData, DataSize, pProcData, BlockSize);
     finish = MPI_Wtime();
@@ -302,8 +302,8 @@ int main(int argc, char *argv[])
     duration = finish - start;
     if (ProcRank == 0)
     {
-        printf("Result:");
-        PrintData(pData, DataSize);
+        // printf("Result:");
+        // PrintData(pData, DataSize);
     }
     if (ProcRank == 0)
         printf("Time of execution: %f\n", duration);
