@@ -11,11 +11,11 @@ A comprehensive collection of MPI-based parallel computing implementations devel
 - [Building and Running](#building-and-running)
 - [Requirements](#requirements)
 
-## 🎯 Overview
+## <a name="overview"></a> 🎯 Overview
 
 This repository demonstrates the implementation and analysis of various parallel algorithms using MPI (Message Passing Interface). Each lab compares serial and parallel implementations, measuring speedup and efficiency across different problem sizes and processor counts.
 
-## 📚 Labs Description
+## <a name="labs-description"></a> 📚 Labs Description
 
 ### Lab 1: Parallel Matrix-Vector Multiplication
 
@@ -73,14 +73,14 @@ Implementation of parallel all-pairs shortest path algorithm. The adjacency matr
 - `ParallelFloyd.cpp` - Parallel implementation
 - `TestParallelFloyd.cpp` - Performance benchmarking
 
-## 🛠 Technologies Used
+## <a name="technologies-used"></a> 🛠 Technologies Used
 
 - **MPI (Message Passing Interface)** - Parallel programming framework
 - **C/C++** - Implementation language
 - **SLURM** - Job scheduling system for cluster execution
 - **mpicxx** - MPI C++ compiler wrapper
 
-## 📁 Project Structure
+## <a name="project-structure"></a> 📁 Project Structure
 
 ```
 .
@@ -111,7 +111,7 @@ Implementation of parallel all-pairs shortest path algorithm. The adjacency matr
     └── tasks_slurm/
 ```
 
-## 🚀 Building and Running
+## <a name="building-and-running"></a> 🚀 Building and Running
 
 ### Compilation
 
@@ -164,7 +164,7 @@ cat output_4.txt
 ```
 
 
-## 📋 Requirements
+## <a name="requirements"></a> 📋 Requirements
 
 ### Software Dependencies:
 - MPI implementation (OpenMPI or MPICH)
