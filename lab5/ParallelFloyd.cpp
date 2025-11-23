@@ -178,8 +178,7 @@ void DataDistribution(int *pMatrix, int *pProcRows, int Size, int RowNum)
 }
 
 // Function for row broadcasting among all processes
-void RowDistribution(int *pProcRows, int Size, int RowNum, int k,
-                     int *pRow)
+void RowDistribution(int *pProcRows, int Size, int RowNum, int k, int *pRow)
 {
     int ProcRowRank; // Process rank with the row k
     int ProcRowNum;  // Process row number
@@ -310,7 +309,7 @@ int main(int argc, char *argv[])
     // TestDistribution(pMatrix, pProcRows, Size, RowNum);
     // Parallel Floyd algorithm
     ParallelFloyd(pProcRows, Size, RowNum);
-    ParallelPrintMatrix(pProcRows, Size, RowNum);
+    // ParallelPrintMatrix(pProcRows, Size, RowNum);
     finish = MPI_Wtime();
     // Process data collection
     ResultCollection(pMatrix, pProcRows, Size, RowNum);

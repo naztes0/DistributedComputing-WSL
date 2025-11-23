@@ -101,15 +101,15 @@ int main()
 
     // Process initialization
     ProcessInitialization(pMatrix, Size);
-    printf("The matrix before Floyd algorithm\n");
-    PrintMatrix(pMatrix, Size, Size);
+    // printf("The matrix before Floyd algorithm\n");
+    // PrintMatrix(pMatrix, Size, Size);
 
     start = clock();
     // Serial Floyd algorithm
     SerialFloyd(pMatrix, Size);
     finish = clock();
-    printf("The matrix after Floyd algorithm\n");
-    PrintMatrix(pMatrix, Size, Size);
+    // printf("The matrix after Floyd algorithm\n");
+    // PrintMatrix(pMatrix, Size, Size);
 
     duration = (finish - start) / double(CLOCKS_PER_SEC);
     printf("Time of execution: %f\n", duration);
