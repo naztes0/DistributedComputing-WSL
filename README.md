@@ -73,6 +73,18 @@ Implementation of parallel all-pairs shortest path algorithm. The adjacency matr
 - `ParallelFloyd.cpp` - Parallel implementation
 - `TestParallelFloyd.cpp` - Performance benchmarking
 
+### Lab 6: Parallel Gauss-Seidel Method
+
+Implementation of parallel iterative Gauss-Seidel method for solving the Laplace equation on a 2D grid. The grid is distributed row-wise among processes with overlapping boundary rows for neighbor communication. Each iteration exchanges boundary data using `MPI_Sendrecv`, updates interior grid points using the five-point stencil formula, and computes local maximum deviation. Global convergence is determined using `MPI_Allreduce` with `MPI_MAX` operation. The algorithm iterates until the maximum change across all processes falls below the specified tolerance.
+
+**Performance testing:** Grids up to 10,000×10,000
+
+**Files:**
+- `SerialGS.cpp` - Serial Gauss-Seidel implementation
+- `ParallelGS.cpp` - Parallel implementation
+- `TestParallelGS.cpp` - Automated performance testing
+- `TestSerialGS.cpp` - Serial performance benchmarking
+
 ## <a name="technologies-used"></a> 🛠 Technologies Used
 
 - **MPI (Message Passing Interface)** - Parallel programming framework
@@ -104,10 +116,16 @@ Implementation of parallel all-pairs shortest path algorithm. The adjacency matr
 │   ├── ParallelBubbleSort.cpp
 │   ├── TestParBubbleSort.cpp
 │   └── tasks_slurm/
-└── lab5/                          # Floyd-Warshall
-    ├── SerialFloyd.cpp
-    ├── ParallelFloyd.cpp
-    ├── TestParallelFloyd.cpp
+├── lab5/                          # Floyd-Warshall
+│   ├── SerialFloyd.cpp
+│   ├── ParallelFloyd.cpp
+│   ├── TestParallelFloyd.cpp
+│   └── tasks_slurm/
+└── lab6/                          # Gauss-Seidel Method
+    ├── SerialGS.cpp
+    ├── ParallelGS.cpp
+    ├── TestParallelGS.cpp
+    ├── TestSerialGS.cpp
     └── tasks_slurm/
 ```
 
@@ -219,5 +237,5 @@ This project is developed for educational purposes as part of the Distributed Co
 ---
 
 **Course**: Distributed Computing  
-**Academic Year**: 2024-2025  
+**Academic Year**: 2025-2026  
 **Institution**: KNU, FCSC
